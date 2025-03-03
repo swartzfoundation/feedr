@@ -3,17 +3,22 @@ package frontend
 import (
 	"embed"
 	"io/fs"
+	"net/http"
 )
 
 //go:embed all:dist/*
-var build embed.FS
-
-var Content fs.FS
+var f embed.FS
+var dist fs.FS
 
 func init() {
-	sub, err := fs.Sub(build, "dist")
+	sub, err := fs.Sub(f, "dist")
 	if err != nil {
 		panic(err)
 	}
-	Content = sub
+	dist = sub
+}
+
+func FS() http.FileSystem {
+	f := http.FS(dist)
+	return f
 }

@@ -19,7 +19,8 @@ func main() {
 		w.Write([]byte("welcome"))
 	})
 
-	r.Get("/*", http.FileServer(http.FS(frontend.Content)).ServeHTTP)
+	frontendFS := frontend.FS()
+	r.Get("/*", http.FileServer(frontendFS).ServeHTTP)
 	log.Printf("Starting server on :3000")
 	log.Println("Time: ", Time)
 	log.Println("Version: ", Version)
