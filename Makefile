@@ -1,11 +1,15 @@
-.PHONY: build clean run test build-linux build-windows build-mac build-arm build-arm64 build-frontend build-all
+.PHONY: dev build clean run test build-linux build-windows build-mac build-arm build-arm64 build-frontend build-all
 
+now=$(shell date +%s)
 GOCMD=go
-LDFLAGS=-ldflags "-X 'main.Version=v0.0.1' -X 'main.Time=$(date)' -s -w"
-GOBUILD=$(GOCMD) build -v $(LDFLAGS) 
-CMD_PATH=cmd/feedr
+LDFLAGS=-ldflags "-X 'main.Version=v0.0.1' -X 'main.BuildTime=$(now)' -s -w"
+GOBUILD=$(GOCMD) build -v $(LDFLAGS)
+MAIN_FILE=main.go
 
 BINARY_NAME=feedr
+
+dev:
+	$(GOCMD) run $(MAIN_FILE)
 
 build:
 	$(GOBUILD) -o bin/$(BINARY_NAME)
