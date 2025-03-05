@@ -33,11 +33,11 @@ func ConnectDatabase(dbConfig config.DBConfig) {
 		SkipDefaultTransaction: false,
 	})
 	if err != nil {
-		slog.Error("db erro connecting to database", "error", err.Error())
+		slog.Error("db: connecting to database", "error", err.Error())
 	}
 	sqlDB, err := gormDB.DB()
 	if err != nil {
-		slog.Error("db error setting max idle connections", "error", err.Error())
+		slog.Error("db: setting max idle connections", "error", err.Error())
 		os.Exit(1)
 	}
 	sqlDB.SetMaxIdleConns(100)
@@ -49,10 +49,10 @@ func CloseDatabase() {
 	d := GetDB()
 	sqlDB, err := d.DB()
 	if err != nil {
-		slog.Error("db error getting database", "error", err.Error())
+		slog.Error("db: getting database", "error", err.Error())
 	}
 	if err := sqlDB.Close(); err != nil {
-		slog.Error("db error closing database", "error", err.Error())
+		slog.Error("db: closing database", "error", err.Error())
 	}
 	slog.Warn("Database closed successfully")
 }
@@ -60,7 +60,7 @@ func CloseDatabase() {
 func PingDatabase() error {
 	sqlDB, err := db.DB()
 	if err != nil {
-		slog.Error("db error pinging database", "error", err.Error())
+		slog.Error("db: pinging database", "error", err.Error())
 	}
 	return sqlDB.Ping()
 }
@@ -78,7 +78,7 @@ func Tables() []interface{} {
 func MigrateDatabase() error {
 	slog.Warn("db migrations started")
 	if err := db.AutoMigrate(tables...); err != nil {
-		slog.Error("db error migrating database", "error", err.Error())
+		slog.Error("db: migrating database", "error", err.Error())
 		return err
 	}
 

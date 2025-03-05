@@ -51,8 +51,7 @@ func main() {
 		w.Write([]byte("welcome"))
 	})
 
-	frontendFS := frontend.FS()
-	r.Get("/*", http.FileServer(frontendFS).ServeHTTP)
+	r.Get("/*", frontend.HandlerFn())
 	slog.Info("Build", "Time", BuildTime)
 	slog.Info("Build", "Version", Version)
 	slog.Info("Starting Feedr", "Port", cfg.PORT)
@@ -71,14 +70,14 @@ func main() {
 		// We received an interrupt signal, shut down.
 		if err := srv.Shutdown(context.Background()); err != nil {
 			// Error from closing listeners, or context timeout:
-			slog.Error("HTTP server Shutdown error", "error", err)
+			slog.Error("HTTP server Shutdown", "error", err)
 		}
 		close(idleConnsClosed)
 	}()
 
 	err := srv.ListenAndServe()
 	if err != nil {
-		slog.Error("http server listen error", "error", err.Error())
+		slog.Error("http server listen", "error", err.Error())
 		os.Exit(1)
 	}
 

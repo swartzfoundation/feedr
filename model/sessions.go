@@ -49,7 +49,7 @@ func NewSessionStore(options *sessions.Options, keyPairs ...[]byte) *DatabaseSto
 		ds.SessionOpts.SameSite = http.SameSiteNoneMode
 	}
 	if err := db.AutoMigrate(&Session{}); err != nil {
-		slog.Error("db error migrating session table", "error", err)
+		slog.Error("db: migrating session table", "error", err)
 	}
 	sessionStore = ds
 
@@ -189,7 +189,7 @@ func (ds *DatabaseStore) getSessionFromCookie(r *http.Request, name string) *Ses
 
 func (ds *DatabaseStore) Remove(r *http.Request, w http.ResponseWriter, session *sessions.Session) {
 	if err := db.Delete(&Session{}, "id <= ?", session.ID).Error; err != nil {
-		slog.Error("error removing session:", "error", err)
+		slog.Error("removing session:", "error", err)
 	}
 	options := &sessions.Options{
 		Domain:   config.Config.Session.SessionCookieDomain,
@@ -208,7 +208,7 @@ func (ds *DatabaseStore) Remove(r *http.Request, w http.ResponseWriter, session 
 func (ds *DatabaseStore) Cleanup() {
 	slog.Warn("Cleaning up expired sessions")
 	if err := db.Delete(&Session{}, "expires_at <= ?", time.Now().Unix()).Error; err != nil {
-		slog.Error("error cleaning up expired sessions", "error", err)
+		slog.Error("cleaning up expired sessions", "error", err)
 	}
 }
 

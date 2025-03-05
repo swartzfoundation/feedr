@@ -18,7 +18,7 @@ func init() {
 	dist = sub
 }
 
-func FS() http.FileSystem {
+func HandlerFn() http.HandlerFunc {
 	f := http.FS(dist)
-	return f
+	return http.FileServer(f).ServeHTTP
 }
