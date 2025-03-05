@@ -1,9 +1,12 @@
 package main
 
 import (
-	"log"
+	"context"
 	"log/slog"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	_ "github.com/joho/godotenv/autoload"
@@ -19,6 +22,7 @@ var BuildTime string // seconds since 1970-01-01 00:00:00 UTC
 var Version = "development"
 
 func main() {
+	var srv http.Server
 	cfg := config.Load()
 
 	if cfg.DEBUG {
@@ -52,8 +56,31 @@ func main() {
 	slog.Info("Build", "Time", BuildTime)
 	slog.Info("Build", "Version", Version)
 	slog.Info("Starting Feedr", "Port", cfg.PORT)
-	err := http.ListenAndServe(":"+cfg.PORT, r)
-	if err != nil {
-		log.Fatalln(err.Error())
+
+	srv = http.Server{
+		Addr:    ":" + cfg.PORT,
+		Handler: r,
 	}
+
+	idleConnsClosed := make(chan struct{})
+	go func() {
+		sigint := make(chan os.Signal, 1)
+		signal.Notify(sigint, os.Interrupt, syscall.SIGTERM, syscall.SIGHUP, syscall.SIGQUIT)
+		<-sigint
+
+		// We received an interrupt signal, shut down.
+		if err := srv.Shutdown(context.Background()); err != nil {
+			// Error from closing listeners, or context timeout:
+			slog.Error("HTTP server Shutdown error", "error", err)
+		}
+		close(idleConnsClosed)
+	}()
+
+	err := srv.ListenAndServe()
+	if err != nil {
+		slog.Error("http server listen error", "error", err.Error())
+		os.Exit(1)
+	}
+
+	<-idleConnsClosed
 }
