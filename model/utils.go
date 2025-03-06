@@ -5,8 +5,8 @@ import (
 	"strings"
 	"unicode"
 
+	"github.com/google/uuid"
 	gonanoid "github.com/matoous/go-nanoid"
-	"github.com/pborman/uuid"
 	"github.com/rs/xid"
 	"golang.org/x/crypto/bcrypt"
 	"golang.org/x/text/cases"
@@ -14,16 +14,21 @@ import (
 )
 
 type ContextKey string
+type UUID []byte
 
-var caser = cases.Title(language.English)
+var caser = cases.Title(language.BritishEnglish)
 
 var encoding = base32.NewEncoding("ybndrfg8ejkmcpqxot1uwisza345h769").WithPadding(base32.NoPadding)
 
 // NewID  is a globally unique identifier.  It is a [A-Z0-9] string 26
 // characters long.  It is a UUID version 4 Guid that is zbased32 encoded
 // without the padding.
-func NewIDEncode() string {
-	return encoding.EncodeToString(uuid.NewRandom())
+func NewIDEncode() (string, error) {
+	v4, err := uuid.NewRandom()
+	if err != nil {
+		return "", err
+	}
+	return encoding.EncodeToString(UUID(v4[:])), nil
 }
 
 func NewBase32ID() string {
@@ -31,8 +36,8 @@ func NewBase32ID() string {
 }
 
 func NewID() string {
-	// zero, o, and I are removed to avoid confusion with 0 and 1.
-	alpha := "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijklmnpqrstuvwxyz"
+	// zero, o, 1, i, and I are removed to avoid confusion with 0 and 1.
+	alpha := "23456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjklmnpqrstuvwxyz"
 	id, err := gonanoid.Generate(alpha, 9)
 	if err != nil {
 		return NewBase32ID()
@@ -42,7 +47,9 @@ func NewID() string {
 
 func HashPassword(password string) (string, error) {
 	var passwordBytes = []byte(password)
-	hash, err := bcrypt.GenerateFromPassword(passwordBytes, bcrypt.DefaultCost)
+	// As of today go still uses 10 as default cost. Next versions might bump to 12 or higher
+	cost := max(bcrypt.DefaultCost, 12)
+	hash, err := bcrypt.GenerateFromPassword(passwordBytes, cost)
 	return string(hash), err
 }
 

@@ -14,15 +14,15 @@ dev:
 build:
 	$(GOBUILD) -o bin/$(BINARY_NAME)
 
+test:
+	$(GOCMD) test ./... -v
+
 clean:
-	rm -f bin/$(BINARY_NAME)
+	rm -rf bin/
 
 run:
 	$(GOBUILD) -o bin/$(BINARY_NAME)
 	./bin/$(BINARY_NAME)
-
-test:
-	$(GOCMD) test -v ./...
 
 build-linux:
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 $(GOBUILD) -o bin/$(BINARY_NAME)
@@ -31,19 +31,19 @@ build-windows:
 	CGO_ENABLED=0 GOOS=windows GOARCH=amd64 $(GOBUILD) -o bin/$(BINARY_NAME).exe
 
 build-mac:
-	CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 $(GOBUILD) -o bin/$(BINARY_NAME)
+	CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 $(GOBUILD) -o bin/$(BINARY_NAME)-mac
 
 build-arm:
-	CGO_ENABLED=0 GOOS=linux GOARCH=arm $(GOBUILD) -o bin/$(BINARY_NAME)
+	CGO_ENABLED=0 GOOS=linux GOARCH=arm $(GOBUILD) -o bin/$(BINARY_NAME)-arm
 
 build-arm64:
-	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 $(GOBUILD) -o bin/$(BINARY_NAME)
+	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 $(GOBUILD) -o bin/$(BINARY_NAME)-arm64
 
 
 build-frontend:
 	cd frontend && pnpm build
 
-build-all: build-linux build-windows build-mac build-rpi build-rpi2 build-rpi3 build-rpi4 build-arm build-arm64
+build-all: build-linux build-windows build-mac build-arm build-arm64
 
 help:
 	@echo "Please use 'make <target>' where <target> is one of"
